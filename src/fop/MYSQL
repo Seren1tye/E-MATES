@@ -1,0 +1,18 @@
+CREATE DATABASE IF NOT EXISTS Ledger;
+USE Ledger;
+
+-- Create the Savings table
+CREATE TABLE IF NOT EXISTS Savings (
+    savings_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    user_input VARCHAR(1),
+    amount DECIMAL(10, 2),
+    FOREIGN KEY (user_id) REFERENCES Balance(user_id)
+);
+
+CREATE TABLE Balance(
+	user_id INT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    current_amount DECIMAL(10, 2) NOT NULL
+);
