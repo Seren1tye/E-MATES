@@ -84,12 +84,6 @@ CREATE TABLE IF NOT EXISTS Repay (
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
--- Insert initial data for Balance
-INSERT INTO Balance (user_id, current_amount)
-VALUES
-    (1, 1000.00), -- Example user 1 starting balance
-    (2, 500.00);  -- Example user 2 starting balance
-
 -- Stored Procedure to Add a Transaction
 DELIMITER $$
 
