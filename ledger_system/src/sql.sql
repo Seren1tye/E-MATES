@@ -148,7 +148,3 @@ END$$
 
 DELIMITER ;
 
--- Example Transactions Using the Procedure
-CALL AddTransaction(1, 'Purchase', 200.00, 0.00, 'debit');
-CALL AddTransaction(1, 'Salary Credit', 0.00, 1500.00, 'credit');
-CALL AddTransaction(2, 'Utility Bill', 100.00, 0.00, 'debit');
