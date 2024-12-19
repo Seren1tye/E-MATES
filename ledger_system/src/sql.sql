@@ -2,8 +2,8 @@
 SET SQL_SAFE_UPDATES = 0;
 
 -- Create the Ledger database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS Ledger;
-USE Ledger;
+CREATE DATABASE IF NOT EXISTS ledger_system;
+USE ledger_system;
 
 -- Create the Users table
 CREATE TABLE IF NOT EXISTS Users (
