@@ -1,3 +1,4 @@
+
 -- Disable safe updates to allow unrestricted updates and deletes
 SET SQL_SAFE_UPDATES = 0;
 
@@ -121,27 +122,7 @@ END$$
 
 DELIMITER ;
 
--- Trigger to Update Balance After a Transaction
-DELIMITER $$
-
-CREATE TRIGGER update_balance_after_transaction
-AFTER INSERT ON Transactions
-FOR EACH ROW
-BEGIN
-    -- Update the user's balance in the Balance table
-    IF NEW.transaction_type = 'debit' THEN
-        UPDATE Balance
-        SET current_amount = current_amount - NEW.debit
-        WHERE user_id = NEW.user_id;
-    ELSE
-        UPDATE Balance
-        SET current_amount = current_amount + NEW.credit
-        WHERE user_id = NEW.user_id;
-    END IF;
-END$$
-
-DELIMITER ;
-
+-- Trigger to Add Balance After User Creation
 DELIMITER $$
 
 CREATE TRIGGER add_balance_after_user_creation
@@ -154,4 +135,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-
