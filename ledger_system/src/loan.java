@@ -1,134 +1,76 @@
+
+
+
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Scanner;
 
 public class loan{
     
-    private static final String url = "jdbc:mysql://localhost:3306/ledger_system";
-    private static final String user = "root";
-    private static final String pass = "1234";
-    static Scanner sc = new Scanner(System.in);
     
-
-    public static void mainloan() {
-        
-        double savings=0,loan=0,balanceMain=0;
-        int user_id = 1;
-        loan = loan(user_id);
-        balanceMain = balanceMain(user_id);
-        int mainMenu;
-        
-        mainf:{
-            
+    static Scanner sc = new Scanner(System.in);
+      
+    public static void loanMethod (int user_id){
+        CreditLoan:{
             while(true){
-                boolean Overdue;
-                Overdue= Overdue(user_id,loan);
                 
-                
+                double loan = loan(user_id);
+                double balanceMain = balanceMain(user_id);
+                String status= status(user_id);
+                int loan_id= loanId(user_id);
+                int repay_id = repayId(user_id, loan_id);
+
+
+
                 System.out.println("""
-                                   == Welcome, Sake ==
-                                   """);
-                System.out.printf("Balance: %.2f\n",balanceMain);
-                System.out.printf("Savings: %.2f\n",savings);
-                System.out.printf("Loan: %.2f\n",loan);
-                
-                System.out.println("""
-                                   
-                                   == Transaction ==
-                                   1.Debit
-                                   2.Credit
-                                   3.History
-                                   4.Savings
-                                   5.Credit Loan
-                                   6.Deposit Interest Predictor
-                                   7.Logout
-                                   
-                                   """);
-                System.out.print(">");
-                mainMenu= sc.nextInt();
-                
-                switch(mainMenu){
-                    
-                    case 2:
-                        if(Overdue){
-                            System.out.println("kasi setel loan bulan ini dulu ma");
+
+                                1.Apply
+                                2.Repay
+                                3.Exit
+                                """);
+                 int menu = sc.nextInt();
+
+                switch(menu){
+                    case 1:
+                        if(loan_id==0 || status.equals("repaid")){
+                            apply(user_id,status, loan_id);
                         }else{
-                            System.out.println("do credit ig");
+                            System.out.println("Complete your current loan repayment before applying for a new one.");
                         }
                         break;
-                    
-                    case 5:
-                        CreditLoan:{
-                            while(true){
 
-                                String status= status(user_id);
-                                int loan_id= loanId(user_id);
-                                
-                                balanceMain = balanceMain(user_id);
-                                loan = loan(user_id);
-                                int repay_id = repayId(user_id, loan_id);
-
-
-
-                                System.out.println("""
-
-                                                1.Apply
-                                                2.Repay
-                                                3.Exit
-                                                """);
-                                 int menu = sc.nextInt();
-
-                                switch(menu){
-                                    case 1:
-                                        if(loan_id==0 || status.equals("repaid")){
-                                            apply(user_id,status, loan_id);
-                                        }else{
-                                            System.out.println("bayo abih lu bos");
-                                        }
-                                        break;
-
-                                    case 2:
-                                        repay(user_id,loan_id,repay_id,loan);
-                                        break;
-
-                                    case 3:
-                                        break CreditLoan;
-                                    default:
-                                        System.out.println("error");
-                                }
-                            }
+                    case 2:
+                        if(loan_id==0 || status.equals("repaid")){
+                            System.out.println("No loan applied.");
+                        }else{
+                            repay(user_id,loan_id,repay_id,loan);
+                            
                         }
-                        break;
                         
-                    case 7:
-                        break mainf;
+                        break;
+
+                    case 3:
+                        break CreditLoan;
+                    default:
+                        System.out.println("error");
                 }
-                
             }
-            
         }
-        
-        
-        
-        
-        System.out.println("Thanks for using our ledger system!");
-                
-        
     }
     
     public static double balanceMain (int user_id){
         double balance=0;
         
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
-            String sql = "select Balance from balance where UserId = ?; ";
+        try {
+            Connection conn = DB.Connect();
+            String sql = "select current_amount from balance where user_id = ?; ";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setInt(1,user_id);
             
             ResultSet rs = statement.executeQuery();
             
             if(rs.next()){
-                balance = rs.getDouble("Balance");
+                balance = rs.getDouble("current_amount");
             }
             
         } catch (SQLException e){
@@ -137,11 +79,12 @@ public class loan{
         return balance;
     }
     
-    public static boolean Overdue(int user_id, double loan){
+    public static boolean Overdue(int user_id){
         boolean Overdue=false;
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
+        try {
+            Connection conn = DB.Connect();
             
-            
+            double loan = loan(user_id);
             Calendar calendar = Calendar.getInstance();
             Date created_at=new Date(calendar.getTimeInMillis());
             Date dueDate=new Date(calendar.getTimeInMillis());
@@ -150,7 +93,7 @@ public class loan{
             int totalPeriod=0;
             
             
-            String sql1 = "select CreatedAt, MonthlyRepay, RepaymentPeriod from loandetails where UserId=? and LoanId = (select MAX(LoanId) from loandetails where UserId= ?); ";
+            String sql1 = "select created_at, monthly_repay, repayment_period from loandetails where user_id=? and loan_id = (select MAX(loan_id) from loandetails where user_id= ?); ";
             PreparedStatement statement1 = conn.prepareStatement(sql1);
             statement1.setInt(1, user_id);
             statement1.setInt(2, user_id);
@@ -158,13 +101,13 @@ public class loan{
             ResultSet rs1= statement1.executeQuery();
             
             if(rs1.next()){
-                M = rs1.getDouble("MonthlyRepay");
-                created_at = rs1.getDate("CreatedAt");
-                totalPeriod = rs1.getInt("RepaymentPeriod");
+                M = rs1.getDouble("monthly_repay");
+                created_at = rs1.getDate("created_at");
+                totalPeriod = rs1.getInt("repayment_period");
                  
             }
             
-            String sql2 = "select Balance, DueDate from repay where UserID = ? and LoanID = (select MAX(LoanID) from repay where UserID= ?) and RepayID = (select MAX(RepayID) from repay where UserId= ? and LoanId = (select MAX(LoanID) from repay where UserID= ?))";
+            String sql2 = "select loan_balance, due_date from repay where user_id = ? and loan_id = (select MAX(loan_id) from repay where user_id= ?) and repay_id = (select MAX(repay_id) from repay where user_id= ? and loan_id = (select MAX(loan_id) from repay where user_id= ?))";
             PreparedStatement statement2 = conn.prepareStatement(sql2);
             statement2.setInt(1, user_id);
             statement2.setInt(2, user_id);
@@ -174,8 +117,8 @@ public class loan{
             ResultSet rs2= statement2.executeQuery();
             
             if(rs2.next()){
-                balance  = rs2.getDouble("Balance");
-                dueDate = rs2.getDate("DueDate");
+                balance  = rs2.getDouble("loan_balance");
+                dueDate = rs2.getDate("due_date");
             }
             
             calendar.setTime(created_at);
@@ -188,10 +131,7 @@ public class loan{
             
             int diff = (year2-year1)*12 + (month2-month1);
             int period = totalPeriod-diff;
-            
-            
-            currentDate = new Date(calendar.getTimeInMillis());
-            
+             
             if(balance>(M*period)&& currentDate.compareTo(dueDate)>0){
                 Overdue=true;
             }
@@ -206,9 +146,9 @@ public class loan{
     
     public static double loan(int user_id){
         double balance=0.00;
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
-            String sql= "select Balance from loandetails where UserId=? and LoanId = (select MAX(LoanId) from loandetails where UserId= ?);";
+        try {
+            Connection conn = DB.Connect();
+            String sql= "select loan_balance from loandetails where user_id=? and loan_id = (select MAX(loan_id) from loandetails where user_id= ?);";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setInt(1, user_id);
             statement.setInt(2, user_id);
@@ -216,23 +156,22 @@ public class loan{
             ResultSet rs= statement.executeQuery();
             
             if(rs.next()){
-                balance = rs.getDouble("Balance");
+                balance = rs.getDouble("loan_balance");
             }
          
             
         } catch (SQLException e){
             e.printStackTrace();
         }
-        
         return balance;
     }
     
     public static String status(int user_id){
         
         String status="repaid";
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
-            String sql= "select Status from loandetails where UserId=? and LoanId = (select MAX(LoanId) from loandetails where UserId= ?);";
+        try {
+            Connection conn = DB.Connect();
+            String sql= "select status from loandetails where user_id=? and loan_id = (select MAX(loan_id) from loandetails where user_id= ?);";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setInt(1, user_id);
             statement.setInt(2, user_id);
@@ -240,7 +179,7 @@ public class loan{
             ResultSet rs= statement.executeQuery();
             
             if(rs.next()){
-                status = rs.getString("Status");
+                status = rs.getString("status");
             }
             
         } catch (SQLException e){
@@ -251,9 +190,9 @@ public class loan{
     
     public static int loanId(int user_id){
         int y=0;
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
-            String sql= "select MAX(LoanId) as MaxLoanId from loandetails where UserId=?;";
+        try {
+            Connection conn = DB.Connect();
+            String sql= "select MAX(loan_id) as MaxLoanId from loandetails where user_id=?;";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setInt(1, user_id);
             
@@ -272,7 +211,8 @@ public class loan{
     }
     
     public static void apply(int user_id, String status, int loan_id){
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
+        try {
+            Connection conn = DB.Connect();
             double balanceMain=0;
             status = "active";
             double principal,interest,period,loan,M;
@@ -299,7 +239,7 @@ public class loan{
             loan = Math.round(loan * 100.0) / 100.0;
             
             //prepare query
-            String sql = "INSERT INTO loandetails (UserId,LoanId,Principal,InterestRate,RepaymentPeriod,MonthlyRepay,Balance,Status,CreatedAt) VALUES (?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO loandetails (user_id,loan_id,principal,interest_rate,repayment_period,monthly_repay,loan_balance,status,created_at) VALUES (?,?,?,?,?,?,?,?,?)";
             PreparedStatement statement = conn.prepareStatement(sql);
             
             
@@ -334,7 +274,7 @@ public class loan{
             balanceMain= Math.round(balanceMain*100.0)/100.0;
             
             
-            String sql2 = "update balance set Balance = ? where UserId = ?;";
+            String sql2 = "update balance set current_amount = ? where user_id = ?;";
             PreparedStatement statement2 = conn.prepareStatement(sql2);
             statement2.setDouble(1,balanceMain);
             statement2.setInt(2, user_id);
@@ -350,9 +290,9 @@ public class loan{
     public static int repayId(int user_id, int loan_id){
         int repay_id=0;
         double balance=1;
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
-            String sql= "select MAX(RepayId) AS MaxRepayId from repay where UserID=? and LoanID = ?;";
+        try {
+            Connection conn = DB.Connect();
+            String sql= "select MAX(repay_id) AS MaxRepayId from repay where user_id=? and loan_id = ?;";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setInt(1, user_id);
             statement.setInt(2, loan_id);
@@ -363,7 +303,7 @@ public class loan{
                 repay_id = rs.getInt("MaxRepayId"); 
             }
             
-            String sql2 = "select Balance from repay where UserID = ? and LoanID = ?-1; ";
+            String sql2 = "select loan_balance from repay where user_id = ? and loan_id = ?-1; ";
             PreparedStatement statement2 = conn.prepareStatement(sql2);
             statement2.setInt(1, user_id);
             statement2.setInt(2, loan_id);
@@ -371,7 +311,7 @@ public class loan{
             ResultSet rs2= statement2.executeQuery();
             
             if(rs2.next()){
-                balance = rs2.getDouble("Balance"); 
+                balance = rs2.getDouble("loan_balance"); 
             }
             
             if(balance==0){
@@ -385,8 +325,8 @@ public class loan{
     
     public static void repay(int user_id,int loan_id, int repay_id, double loan){
         
-        try (Connection conn = DriverManager.getConnection(url,user,pass)){
-            
+        try {
+            Connection conn = DB.Connect();
             double balanceMain= balanceMain(user_id);
             int installment;
             Calendar calendar = Calendar.getInstance();
@@ -394,7 +334,7 @@ public class loan{
             double M=0,repay;
             int period=0;
             
-            String sql1 = "select CreatedAt, MonthlyRepay, RepaymentPeriod from loandetails where UserId=? and LoanId = (select MAX(LoanId) from loandetails where UserId= ?); ";
+            String sql1 = "select created_at, monthly_repay, repayment_period from loandetails where user_id=? and loan_id = (select MAX(loan_id) from loandetails where user_id= ?); ";
             PreparedStatement statement1 = conn.prepareStatement(sql1);
             statement1.setInt(1, user_id);
             statement1.setInt(2, user_id);
@@ -402,9 +342,9 @@ public class loan{
             ResultSet rs= statement1.executeQuery();
             
             if(rs.next()){
-                M = rs.getDouble("MonthlyRepay");
-                period = rs.getInt("RepaymentPeriod");
-                created_at = rs.getDate("CreatedAt");
+                M = rs.getDouble("monthly_repay");
+                period = rs.getInt("repayment_period");
+                created_at = rs.getDate("created_at");
                 calendar.setTime(created_at); 
             }
             
@@ -439,7 +379,7 @@ public class loan{
             repay = sc.nextDouble();
             
             if(repay>balanceMain){
-                System.out.println("topup dulu ma");
+                System.out.println("Insuficcient funds.");
             }else{
                 
                 balanceMain-=repay;
@@ -488,7 +428,7 @@ public class loan{
                     statement2.executeUpdate();
 
 
-                    String sql3 = "update loandetails set Balance = ? where UserId = ? and LoanId = ?; ";
+                    String sql3 = "update loandetails set loan_balance = ? where user_id = ? and loan_id = ?; ";
                     PreparedStatement statement3 = conn.prepareStatement(sql3);
 
                     statement3.setDouble(1,loan);
@@ -498,7 +438,7 @@ public class loan{
                     statement3.executeUpdate();
 
                     if (loan==0){
-                        String sql4 = "update loandetails set Status = \"repaid\" where UserId = ? and LoanId = ?; ";
+                        String sql4 = "update loandetails set status = \"repaid\" where user_id = ? and loan_id = ?; ";
                         PreparedStatement statement4 = conn.prepareStatement(sql4);
 
                         statement4.setInt(1,user_id);
@@ -507,14 +447,27 @@ public class loan{
                         statement4.executeUpdate();
                     }
                     
+                    String sql6 = "insert into transactions (user_id, description, credit, balance, transaction_type) values (?,?,?,?,?)";
+                    PreparedStatement statement6 = conn.prepareStatement(sql6);
                     
-                    String sql5 = "update balance set Balance = ? where UserId = ?;";
+                    statement6.setInt(1,user_id);
+                    statement6.setString(2, "Loan repayment");
+                    statement6.setDouble(3, repay);
+                    statement6.setDouble(4, balanceMain);
+                    statement6.setString(5, "credit");
+
+                    statement6.executeUpdate();
+                    
+                    
+                    String sql5 = "update balance set current_amount = ? where user_id = ?;";
                     PreparedStatement statement5 = conn.prepareStatement(sql5);
                     
                     statement5.setDouble(1,balanceMain);
                     statement5.setInt(2, user_id);
                     
                     statement5.executeUpdate();
+                    
+                    
             }
             
             
