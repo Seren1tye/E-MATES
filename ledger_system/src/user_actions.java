@@ -64,8 +64,9 @@ public class user_actions {
             
             
         }
-public static int log_in() {
+public static String[] log_in() {
     int userId = -1; // Invalid by default
+    String userName = null; // To hold the user's name
     try {
         Connection connection = DB.Connect();
         Scanner scanner = new Scanner(System.in);
@@ -86,7 +87,8 @@ public static int log_in() {
 
         if (resultSet.next()) {
             userId = resultSet.getInt("user_id");
-            System.out.println("Welcome, " + resultSet.getString("name") + "!");
+            userName = resultSet.getString("name");
+            System.out.println("Welcome, " + userName + "!");
         } else {
             System.out.println("Invalid email or password.");
         }
@@ -94,8 +96,9 @@ public static int log_in() {
         System.out.println("Error during login.");
         e.printStackTrace();
     }
-    return userId; // Return the logged-in user ID
+    return new String[]{String.valueOf(userId), userName}; // Return both userId and userName
 }
+
 
         
         }
