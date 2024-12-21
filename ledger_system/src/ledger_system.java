@@ -47,16 +47,20 @@ public class ledger_system {
 
         do {
             // Display user balance
-            System.out.println("\n=== Transactions Menu ===");
+            System.out.println("\n=== Welcome, name ==="); // moaaz, update your code so that it will display username
             System.out.println("Balance: " + Ledger.getBalance(userId));
+            System.out.println("Savings: aimaan's code"); // aimaan's part
+            System.out.println("Loan: 0.00"); //ill update later
+
+            System.out.println("\n=== Transactions ===");
             System.out.println("1. Debit");
             System.out.println("2. Credit");
-            System.out.println("3. View Transaction History");
-            System.out.println("4. Activate Savings");
+            System.out.println("3. History");
+            System.out.println("4. Savings");
             System.out.println("5. Credit Loan");
             System.out.println("6. Deposit Interest Predictor");
             System.out.println("7. Logout");
-            System.out.print("Input: ");
+            System.out.print("\nInput: ");
             option = read.nextInt();
             read.nextLine(); // Consume newline
 
