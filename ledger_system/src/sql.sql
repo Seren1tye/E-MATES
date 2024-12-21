@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS LoanDetails (
     monthly_repay DECIMAL(65, 2) NOT NULL,
     loan_balance DECIMAL(65, 2) NOT NULL,
     status VARCHAR(100) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATE,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
