@@ -88,7 +88,6 @@ public static String[] log_in() {
         if (resultSet.next()) {
             userId = resultSet.getInt("user_id");
             userName = resultSet.getString("name");
-            System.out.println("Welcome, " + userName + "!");
         } else {
             System.out.println("Invalid email or password.");
         }
