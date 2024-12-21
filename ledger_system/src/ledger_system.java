@@ -52,9 +52,9 @@ private static void transactionsMenu(int userId, String userName) {
     do {
         // Display user balance and personalized welcome message
         System.out.println("\n=== Welcome, " + userName + " ==="); // Display the user's name
-        System.out.println("Balance: " + Ledger.getBalance(userId));
+        System.out.printf("Balance: %.2f\n", Ledger.getBalance(userId));
         System.out.println("Savings: aimaan's code"); // aimaan's part
-        System.out.println("Loan: 0.00"); // ill update later
+        System.out.printf("Loan: %.2f\n", loan.loan(userId)); 
 
         System.out.println("\n=== Transactions ===");
         System.out.println("1. Debit");
@@ -70,22 +70,29 @@ private static void transactionsMenu(int userId, String userName) {
 
         switch (option) {
             case 1:
-                Ledger.debitAmount(userId, read); // Debit transaction
+                if(loan.Overdue(userId)){
+                    System.out.println("Please pay this month's installment to proceed with this action.");
+                }else{
+                    Ledger.debitAmount(userId, read); // Debit transaction
+                }
                 break;
             case 2:
-                Ledger.creditAmount(userId, read); // Credit transaction
-                break;
+                if(loan.Overdue(userId)){
+                    System.out.println("Please pay this month's installment to proceed with this action.");
+                }else{
+                    Ledger.creditAmount(userId, read); // Credit transaction
+                }
             case 3:
-                history.displayHistory(userId); // Display transaction history
+            //    history.displayHistory(userId); // Display transaction history
                 break;
             case 4:
-                savings.showSavingsMenu(read, userId);
+            //    savings.showSavingsMenu(read, userId);
                 break;
-//            case 5:
-//                loan.mainloan();
-//                break;
+            case 5:
+                loan.loanMethod(userId);
+                break;
             case 6:
-                InterestPredictor.mainIntrest();
+            //    InterestPredictor.mainIntrest();
                 break;
             case 7:
                 System.out.println("Returning to Main Menu...");
