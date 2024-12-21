@@ -35,7 +35,7 @@ public class user_actions {
         resultSet.next(); // Move the cursor to the first row
 
         if (resultSet.getInt(1) > 0) { // Check if the count is greater than 0
-            System.out.println("Email already registered. Log in or reset your password.");
+            System.out.println("Error: This email is already registered.");
             return;
         }
 
