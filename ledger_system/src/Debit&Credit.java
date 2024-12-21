@@ -1,16 +1,16 @@
+package sem1project;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class Ledger {
-
+public class DebitCredit {
 
     public static double getBalance(int userId) {
         double balance = 0.0;
-        Connection conn = DB.connect();
+        Connection conn = DB.Connect();
         if (conn == null) {
             System.out.println("Failed to connect to the database.");
             return balance;
@@ -30,35 +30,67 @@ public class Ledger {
         return balance;
     }
 
+    private static void updateBalance(int userId, double newBalance) {
+        String sql = "UPDATE Balance SET current_amount = ? WHERE user_id = ?";
+        try (Connection conn = DB.Connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, newBalance);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error updating balance: " + e.getMessage());
+        }
+    }
+
     private static void insertTransaction(int userId, double amount, String description, String type) {
         String sql = "INSERT INTO Transactions (user_id, description, debit, credit, balance, transaction_type) " +
-                     "VALUES (?, ?, ?, ?, (SELECT current_amount FROM Balance WHERE user_id = ?) + ?, ?)";
-        try (Connection conn = DB.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DB.Connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setString(2, description);
 
             if (type.equalsIgnoreCase("Debit")) {
-                stmt.setDouble(3, amount);
-                stmt.setDouble(4, 0.0);
-                stmt.setDouble(5, userId);
-                stmt.setDouble(6, -amount);
+                stmt.setDouble(3, amount); // Debit amount
+                stmt.setDouble(4, 0.0);    // No credit
             } else {
-                stmt.setDouble(3, 0.0);
-                stmt.setDouble(4, amount);
-                stmt.setDouble(5, userId);
-                stmt.setDouble(6, amount);
+                stmt.setDouble(3, 0.0);    // No debit
+                stmt.setDouble(4, amount); // Credit amount
             }
 
-            stmt.setString(7, type);
+            double currentBalance = getBalance(userId);
+            double newBalance = type.equalsIgnoreCase("Debit") ? currentBalance - amount : currentBalance + amount;
+            stmt.setDouble(5, newBalance); // Updated balance
+            stmt.setString(6, type);
+
             stmt.executeUpdate();
+
+            // Update the balance in the Balance table
+            updateBalance(userId, newBalance);
         } catch (SQLException e) {
             System.out.println("Error inserting into Transactions: " + e.getMessage());
         }
     }
 
     public static void debitAmount(int userId, Scanner read) {
-        System.out.println("\n=== WITHDRAWAL TRANSACTION ===");
-        System.out.print("Enter amount to withdraw: ");
+        System.out.println("\n=== DEBIT TRANSACTION ===");
+        System.out.print("Enter amount to debit: ");
+        double amount = read.nextDouble();
+        read.nextLine();
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount. Please enter a positive value.\n");
+            return;
+        }
+
+        System.out.print("Enter a description: ");
+        String description = read.nextLine();
+
+        insertTransaction(userId, amount, description, "Debit");
+        System.out.println("Credit transaction successful!\n");
+    }
+
+    public static void creditAmount(int userId, Scanner read) {
+        System.out.println("\n=== CREDIT TRANSACTION ===");
+        System.out.print("Enter amount to credit: ");
         double amount = read.nextDouble();
         read.nextLine();
 
@@ -77,25 +109,7 @@ public class Ledger {
         System.out.print("Enter a description: ");
         String description = read.nextLine();
 
-        insertTransaction(userId, -amount, description, "Debit");
-        System.out.println("Withdrawal transaction successful!\n");
-    }
-
-    public static void creditAmount(int userId, Scanner read) {
-        System.out.println("\n=== CREDIT TRANSACTION ===");
-        System.out.print("Enter amount to credit: ");
-        double amount = read.nextDouble();
-        read.nextLine();
-
-        if (amount <= 0) {
-            System.out.println("Invalid amount. Please enter a positive value.\n");
-            return;
-        }
-
-        System.out.print("Enter a description: ");
-        String description = read.nextLine();
-
         insertTransaction(userId, amount, description, "Credit");
-        System.out.println("Credit transaction successful!\n");
+        System.out.println("Debit transaction successful!\n");
     }
 }
