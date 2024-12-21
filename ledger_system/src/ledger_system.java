@@ -13,7 +13,8 @@ public class ledger_system {
             System.out.println("1. Register");
             System.out.println("2. Login");
             System.out.println("3. Exit");
-            System.out.print("Enter your choice: ");
+            System.out.println("Enter your choice: ");
+            System.out.print("\n>");
             choice = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
@@ -28,7 +29,7 @@ public class ledger_system {
                      String userName = loginResult[1];
 
                     if (userId != -1) {
-                        System.out.println("Login successful!\n");
+                        System.out.println("\n Login successful!!!\n");
                         transactionsMenu(userId, userName); // Pass the user's name to the transactions menu
                     }
                     break;
@@ -63,7 +64,7 @@ private static void transactionsMenu(int userId, String userName) {
         System.out.println("5. Credit Loan");
         System.out.println("6. Deposit Interest Predictor");
         System.out.println("7. Logout");
-        System.out.print("\nInput: ");
+        System.out.print("\n> ");
         option = read.nextInt();
         read.nextLine(); // Consume newline
 
