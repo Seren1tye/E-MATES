@@ -142,3 +142,16 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE TRIGGER add_balance_after_user_creation
+AFTER INSERT ON Users
+FOR EACH ROW
+BEGIN
+    -- Insert a new record into the Balance table with a default amount of 0
+    INSERT INTO Balance (user_id, current_amount)
+    VALUES (NEW.user_id, 0.00);
+END$$
+
+DELIMITER ;
+
