@@ -380,6 +380,8 @@ public class loan{
             
             if(repay>balanceMain){
                 System.out.println("Insuficcient funds.");
+            }else if (repay>loan){
+                System.out.println("You’re paying more than required for your loan.");
             }else{
                 
                 balanceMain-=repay;
