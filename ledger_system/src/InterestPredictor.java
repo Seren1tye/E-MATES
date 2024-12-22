@@ -1,32 +1,45 @@
-//This program will calculate the monthly interest based on the amount deposited (entered by user) and stores it in a database.
+//This program will calculate the interest(daily/monthly/annually) based on the current balance and displays it.
 
 import java.sql.*;
 import java.util.Scanner;
 
 public class InterestPredictor {
     
-    private static String url = "jdbc:mysql://localhost:3306/ledger_system";
-    private static String user = "root";
-    private static String password = "1234";
-    static Scanner in = new Scanner(System.in);
+    private static final String URL = "jdbc:mysql://localhost:3306/ledger_system"; // Update your DB name
+    private static final String USER = "root";
+    private static final String PASSWORD = "fir"; // Use your MySQL root password
+    private static Scanner in = new Scanner(System.in);
     
-    public static void mainIntrest() {
-        int user_id = 15;
+    public static void mainInterest(int user_id) {
         int choice;
+        double interestRate = interestRate(chooseBank());
         
         do {
-            System.out.println("1. Deposit");
-            System.out.println("2. Exit");
+            System.out.println("Choose interest period:");
+            System.out.println("1. Daily");
+            System.out.println("2. Monthly");
+            System.out.println("3. Annually");
+            System.out.println("4. Exit");
+            System.out.print("\n> ");
             choice = in.nextInt();
             System.out.println();
             switch(choice){
                 case 1:
-                    double interest = calculateInterest(user_id);
-                    System.out.printf("Monthly interest: %.2f", interest);
+                    System.out.printf("The daily interest is %.2f", calculateInterest(user_id, choice, interestRate));
                     System.out.println();
                     break;
                     
                 case 2:
+                    System.out.printf("The monthly interest is %.2f", calculateInterest(user_id, choice, interestRate));
+                    System.out.println();
+                    break;
+                    
+                case 3:
+                    System.out.printf("The annual interest is %.2f", calculateInterest(user_id, choice, interestRate));
+                    System.out.println();
+                    break;
+                    
+                case 4:
                     break;
                     
                 default:
@@ -34,9 +47,10 @@ public class InterestPredictor {
                     break;
             }
             
-        } while(choice != 2);
+        } while(choice != 4);
     }
     
+    //Method to choose bank ID
     public static int chooseBank(){
         int bankID = 0;
         
@@ -47,7 +61,9 @@ public class InterestPredictor {
         System.out.println("4. Alliance");
         System.out.println("5. AmBank");
         System.out.println("6. Standard Chartered");
+        System.out.print("\n> ");
         int bank = in.nextInt();
+        System.out.println();
         
         switch (bank){
             case 1:
@@ -81,6 +97,7 @@ public class InterestPredictor {
         return bankID;
     }
     
+    //Method to choose interest rate for bank
     public static double interestRate(int bankID){
         double rate = 0;
         
@@ -116,30 +133,26 @@ public class InterestPredictor {
         return rate;
     }
     
-    public static double calculateInterest(int user_id){
+    //Method to calculate interest from the balance and interest rate (daily/monthly/annually)
+    public static double calculateInterest(int user_id, int period, double interestRate){
         double interest = 0;
         
-        try(Connection connection = DriverManager.getConnection(url, user, password)){
-            double interestRate = interestRate(chooseBank());
+        try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
+            double balance = getBalance(user_id);
             
-            System.out.print("\nEnter deposit amount: ");
-            double deposit = in.nextDouble();
-            
-            PreparedStatement pstmt = connection.prepareStatement("UPDATE interest SET deposit = ? WHERE user_id = ?");
-            pstmt.setDouble(2, user_id);
-            pstmt.setDouble(1, deposit);
-            pstmt.executeUpdate();
-            
-            interest = deposit * interestRate / 12;
-            PreparedStatement pstmt2 = connection.prepareStatement("UPDATE interest SET interest = ? WHERE user_id = ?");
-            pstmt2.setInt(2, user_id);
-            pstmt2.setDouble(1, interest);
-            pstmt2.executeUpdate();
-            
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM interest");
-            while(rs.next()){
-                interest = rs.getDouble("interest");
+            switch (period){
+                case 1:
+                    interest = balance * interestRate / 365;
+                    break;
+                    
+                case 2:
+                    interest = balance * interestRate / 12;
+                    break;
+                
+                case 3:
+                    interest = balance * interestRate;
+                    break;
+                    
             }
             
         } catch (SQLException e){
@@ -147,6 +160,27 @@ public class InterestPredictor {
         }
         
         return interest;
+    }
+    
+    //Method to retrieve  current balance amount from database
+    public static double getBalance(int user_id){
+        double balance = 0;
+        
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
+            PreparedStatement pstmt = connection.prepareStatement("SELECT current_amount FROM balance WHERE user_id = ?");
+            pstmt.setInt(1, user_id);
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()){
+                balance = rs.getDouble("current_amount");
+            }
+            
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+        
+        return balance;
     }
 }
     
