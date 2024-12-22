@@ -57,7 +57,7 @@ public class DebitCredit {
             }
 
             double currentBalance = getBalance(userId);
-            double newBalance = type.equalsIgnoreCase("Debit") ? currentBalance - amount : currentBalance + amount;
+            double newBalance = type.equalsIgnoreCase("Credit") ? currentBalance - amount : currentBalance + amount;
             stmt.setDouble(5, newBalance); // Updated balance
             stmt.setString(6, type);
 
@@ -84,7 +84,7 @@ public class DebitCredit {
         System.out.print("Enter a description: ");
         String description = read.nextLine();
 
-        insertTransaction(userId, amount, description, "Credit");
+        insertTransaction(userId, amount, description, "Debit");
         System.out.println("Credit transaction successful!\n");
     }
 
@@ -109,7 +109,7 @@ public class DebitCredit {
         System.out.print("Enter a description: ");
         String description = read.nextLine();
 
-        insertTransaction(userId, amount, description, "Debit");
+        insertTransaction(userId, amount, description, "Credit");
         System.out.println("Debit transaction successful!\n");
     }
 }
