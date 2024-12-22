@@ -52,7 +52,7 @@ private static void transactionsMenu(int userId, String userName) {
     do {
         // Display user balance and personalized welcome message
         System.out.println("\n=== Welcome, " + userName + " ==="); // Display the user's name
-        System.out.printf("Balance: %.2f\n", Ledger.getBalance(userId));
+        System.out.printf("Balance: %.2f\n", DebitCredit.getBalance(userId));
         System.out.println("Savings: aimaan's code"); // aimaan's part
         System.out.printf("Loan: %.2f\n", loan.loan(userId)); 
 
