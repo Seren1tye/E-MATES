@@ -73,14 +73,14 @@ private static void transactionsMenu(int userId, String userName) {
                 if(loan.Overdue(userId)){
                     System.out.println("Please pay this month's installment to proceed with this action.");
                 }else{
-                    Ledger.debitAmount(userId, read); // Debit transaction
+                    DebitCredit.debitAmount(userId, read); // Debit transaction
                 }
                 break;
             case 2:
                 if(loan.Overdue(userId)){
                     System.out.println("Please pay this month's installment to proceed with this action.");
                 }else{
-                    Ledger.creditAmount(userId, read); // Credit transaction
+                    DebitCredit.creditAmount(userId, read); // Credit transaction
                 }
             case 3:
             //    history.displayHistory(userId); // Display transaction history
