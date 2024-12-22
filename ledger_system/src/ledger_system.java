@@ -92,7 +92,7 @@ private static void transactionsMenu(int userId, String userName) {
                 loan.loanMethod(userId);
                 break;
             case 6:
-            //    InterestPredictor.mainIntrest();
+                InterestPredictor.mainInterest(userId);
                 break;
             case 7:
                 System.out.println("Returning to Main Menu...");
