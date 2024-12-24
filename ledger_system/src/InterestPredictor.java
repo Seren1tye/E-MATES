@@ -5,9 +5,6 @@ import java.util.Scanner;
 
 public class InterestPredictor {
     
-    private static final String URL = "jdbc:mysql://localhost:3306/ledger_system"; // Update your DB name
-    private static final String USER = "root";
-    private static final String PASSWORD = "fir"; // Use your MySQL root password
     private static Scanner in = new Scanner(System.in);
     
     public static void mainInterest(int user_id) {
@@ -23,6 +20,7 @@ public class InterestPredictor {
             System.out.print("\n> ");
             choice = in.nextInt();
             System.out.println();
+            
             switch(choice){
                 case 1:
                     System.out.printf("The daily interest is %.2f", calculateInterest(user_id, choice, interestRate));
@@ -99,66 +97,45 @@ public class InterestPredictor {
     
     //Method to choose interest rate for bank
     public static double interestRate(int bankID){
-        double rate = 0;
+        double interestRate = 0;
         
-        switch (bankID){
-            case 1:
-                rate = 0.026;
-                break;
-                
-            case 2:
-                rate = 0.025;
-                break;
-                
-            case 3:
-                rate = 0.023;
-                break;
-                
-            case 4:
-                rate = 0.0285;
-                break;
-                
-            case 5:
-                rate = 0.0255;
-                break;
-                
-            case 6:
-                rate = 0.0265;
-                break;
-                
-            default:
-                break;
-                
-        }
-        return rate;
-    }
-    
-    //Method to calculate interest from the balance and interest rate (daily/monthly/annually)
-    public static double calculateInterest(int user_id, int period, double interestRate){
-        double interest = 0;
-        
-        try(Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
-            double balance = getBalance(user_id);
+        try (Connection connection = DB.Connect()){
+            String query = "SELECT interest_rate FROM bankDetails WHERE bank_id = ?";
+            PreparedStatement pstmt = connection.prepareStatement(query);
+            pstmt.setDouble(1, bankID);
             
-            switch (period){
-                case 1:
-                    interest = balance * interestRate / 365;
-                    break;
-                    
-                case 2:
-                    interest = balance * interestRate / 12;
-                    break;
-                
-                case 3:
-                    interest = balance * interestRate;
-                    break;
-                    
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()){
+                interestRate = rs.getDouble("interest_rate");
             }
             
         } catch (SQLException e){
             e.printStackTrace();
         }
         
+        return interestRate;
+    }
+    
+    //Method to calculate interest from the balance and interest rate (daily/monthly/annually)
+    public static double calculateInterest(int user_id, int period, double interestRate){
+        double interest = 0;
+        
+        double balance = getBalance(user_id);
+            
+        switch (period){
+            case 1:
+                interest = balance * interestRate / 365;
+                break;
+
+            case 2:
+                interest = balance * interestRate / 12;
+                break;
+
+            case 3:
+                interest = balance * interestRate;
+                break;
+
+        }
         return interest;
     }
     
@@ -166,8 +143,9 @@ public class InterestPredictor {
     public static double getBalance(int user_id){
         double balance = 0;
         
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)){
-            PreparedStatement pstmt = connection.prepareStatement("SELECT current_amount FROM balance WHERE user_id = ?");
+        try (Connection connection = DB.Connect()){
+            String query = "SELECT current_amount FROM balance WHERE user_id = ?";
+            PreparedStatement pstmt = connection.prepareStatement(query);
             pstmt.setInt(1, user_id);
             
             ResultSet rs = pstmt.executeQuery();
