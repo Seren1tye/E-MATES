@@ -1,23 +1,50 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.SQLException;
+import java.util.Scanner;
 
-public class history {
+public class historywithcsv {
+    public static void main(String[] args) {
+        try (Connection conn = DB.Connect();) {
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                System.out.println("\n== Transaction Menu ==");
+                System.out.println("1. View Transaction History");
+                System.out.println("2. Export to CSV");
+                System.out.println("3. Exit");
+                System.out.print("Choose an option: ");
+                int choice = scanner.nextInt();
 
-    // Method to display the transaction history for a given user
-    public static void displayHistory(int userId) {
-        try (Connection connection = DB.Connect();
-             Statement stmt = connection.createStatement()) {
+                switch (choice) {
+                    case 1:
+                        viewTransactionHistory(conn);
+                        break;
+                    case 2:
+                        exportToCSV(conn);
+                        break;
+                    case 3:
+                        System.out.println("Exiting...");
+                        return;
+                    default:
+                        System.out.println("Invalid option. Try again.");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-            // Adjusting the query to filter by user_id to show only the current user's history
-            String query = "SELECT date, description, debit, credit, balance FROM TransactionsHistory WHERE user_id = " + userId;
-            ResultSet rs = stmt.executeQuery(query);
+    // Method to view transaction history
+    private static void viewTransactionHistory(Connection conn) throws SQLException {
+        String query = "SELECT date, description, debit, credit, balance FROM TransactionsHistory";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
 
-            // Table headers for the output
-            System.out.printf("%-20s %-30s %-10s %-10s %-10s%n", "Date", "Description", "Debit", "Credit", "Balance");
+            System.out.printf("%-12s %-20s %-10s %-10s %-10s%n", "Date", "Description", "Debit", "Credit", "Balance");
             System.out.println("-------------------------------------------------------------");
-
-            // Loop through the results and display each record
             while (rs.next()) {
                 String date = rs.getString("date");
                 String description = rs.getString("description");
@@ -25,18 +52,37 @@ public class history {
                 double credit = rs.getDouble("credit");
                 double balance = rs.getDouble("balance");
 
-                // Printing each transaction record in formatted style
-                System.out.printf("%-20s %-30s %-10.2f %-10.2f %-10.2f%n", date, description, debit, credit, balance);
+                System.out.printf("%-12s %-20s %-10.2f %-10.2f %-10.2f%n",
+                        date, description, debit, credit, balance);
             }
-        } catch (Exception e) {
-            e.printStackTrace(); // In case of any exception, print the stack trace for debugging
         }
     }
 
-    public static void main(String[] args) {
-        // This would ideally be replaced by a dynamically set userId after login
-        // Sample test: Display transaction history for user with ID = 6
-        int userId = 6; // Example user ID - In actual usage, this would come from the login system
-        displayHistory(userId);  // Call method to display user's transaction history
+    // Method to export transaction history to CSV
+    private static void exportToCSV(Connection conn) throws SQLException {
+        String query = "SELECT date, description, debit, credit, balance FROM TransactionsHistory";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query);
+             FileWriter writer = new FileWriter("TransactionHistory.csv")) {
+
+            // Write CSV headers
+            writer.append("Date,Description,Debit,Credit,Balance\n");
+
+            // Write data
+            while (rs.next()) {
+                String date = rs.getString("date");
+                String description = rs.getString("description");
+                double debit = rs.getDouble("debit");
+                double credit = rs.getDouble("credit");
+                double balance = rs.getDouble("balance");
+
+                writer.append(String.format("%s,%s,%.2f,%.2f,%.2f\n",
+                        date, description, debit, credit, balance));
+            }
+
+            System.out.println("Transaction history exported to TransactionHistory.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
