@@ -58,8 +58,8 @@ public class history {
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setInt(1, userId); // Set user ID in the query
                 try (ResultSet rs = stmt.executeQuery()) {
-                    System.out.printf("%-12s %-20s %-10s %-10s %-10s%n", "Date", "Description", "Debit", "Credit", "Balance");
-                    System.out.println("-------------------------------------------------------------");
+                    System.out.printf("%-20s %-20s %-10s %-10s %-10s%n", "Date", "Description", "Debit", "Credit", "Balance");
+                    System.out.println("--------------------------------------------------------------------------");
                     boolean hasData = false;
 
                     // Iterate through the result set and display the transactions
@@ -71,7 +71,7 @@ public class history {
                         double credit = rs.getDouble("credit");
                         double balance = rs.getDouble("balance");
 
-                        System.out.printf("%-12s %-20s %-10.2f %-10.2f %-10.2f%n",
+                        System.out.printf("%-20s %-20s %-10.2f %-10.2f %-10.2f%n",
                                 date, description, debit, credit, balance);
                     }
 
