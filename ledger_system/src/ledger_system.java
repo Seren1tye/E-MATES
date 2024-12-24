@@ -66,6 +66,7 @@ private static void transactionsMenu(int userId, String userName) {
         System.out.println("7. Logout");
         System.out.print("\n> ");
         option = read.nextInt();
+
         read.nextLine(); // Consume newline
 
         switch (option) {
@@ -83,7 +84,7 @@ private static void transactionsMenu(int userId, String userName) {
                     DebitCredit.creditAmount(userId, read); // Credit transaction
                 }
             case 3:
-            //    history.displayHistory(userId); // Display transaction history
+                    history.mainHistory(userId); // Display transaction history
                 break;
             case 4:
             //    savings.showSavingsMenu(read, userId);
